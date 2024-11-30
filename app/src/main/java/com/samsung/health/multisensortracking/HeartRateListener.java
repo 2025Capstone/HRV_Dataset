@@ -100,7 +100,7 @@ public class HeartRateListener extends BaseListener {
             updateListener.onHeartRateUpdate(heartRate);
         }
         // 심박수가 비정상적이면(너무 낮거나 높음) 에러로 처리
-        if (heartRate <= 40 || heartRate >= 180) {
+        if (heartRate <= 40 || heartRate >= 150) {
             errorCount++;
         } else {
             // R-R 간격 계산 (1분(60000ms) 나누기 심박수)
@@ -117,7 +117,6 @@ public class HeartRateListener extends BaseListener {
 //            double hrv = calculateHRV(); // HRV 계산
 //            uploadHeartRateData(hrv, timestamp);
             uploadRrDataToFirebase();
-            resetData(); // 데이터 초기화
         }
     }
 
@@ -237,6 +236,7 @@ public class HeartRateListener extends BaseListener {
         Log.d(APP_TAG, "Data uploaded with start timestamp: " + validTimestampKey +
                 ", rrIntervals size: " + validData.size() +
                 ", errorCount: " + errorCount);
+        resetData();
     }
 
 
