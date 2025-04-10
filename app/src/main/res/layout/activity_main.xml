@@ -9,6 +9,7 @@
     tools:deviceIds="wear">
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/root_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -62,7 +63,7 @@
             android:id="@+id/txtHeartRate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="0 bpm"
+            android:text="0ms"
             android:textAlignment="center"
             android:textColor="@android:color/white"
             android:textSize="16sp"
@@ -111,6 +112,8 @@
             app:trackThickness="6dp"
             tools:layout_editor_absoluteX="0dp"
             tools:layout_editor_absoluteY="0dp" />
+
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

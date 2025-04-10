@@ -36,6 +36,7 @@ public class PpgListener extends BaseListener {
 
     private static final String APP_TAG = "PPG_Listener";
     private DatabaseReference databaseReference; // Firebase Database의 참조 (심박수 데이터를 저장할 경로)
+    private DatabaseReference databaseReference_survey;
     private boolean shouldUploadData = false; // 데이터 업로드 활성화 여부 플래그
     private List<PpgData> ppgDataList = new ArrayList<>(); // PPG 센서 데이터(정수값)를 저장할 리스트
     private long lastPeakTime = 0;  // 마지막 피크 감지 시각 (밀리초 단위)
@@ -76,6 +77,7 @@ public class PpgListener extends BaseListener {
     PpgListener() {
         // Firebase Database의 "HeartRateData" 경로를 참조
         databaseReference = FirebaseDatabase.getInstance().getReference("HeartRateData");
+        databaseReference_survey = FirebaseDatabase.getInstance().getReference("DrowsinessData");
 
         // 초기에 Firebase 기존에 저장된 데이터를 모두 삭제(초기화)
         clearExistingData();
@@ -117,6 +119,9 @@ public class PpgListener extends BaseListener {
         // Firebase 데이터베이스에서 기존 데이터 삭제
         databaseReference.removeValue()
                 .addOnSuccessListener(aVoid -> Log.d(APP_TAG, "All existing Heart Rate data cleared"))
+                .addOnFailureListener(e -> Log.e(APP_TAG, "Failed to clear existing Heart Rate data", e));
+        databaseReference_survey.removeValue()
+                .addOnSuccessListener(aVoid -> Log.d(APP_TAG, "All existing Survey data cleared"))
                 .addOnFailureListener(e -> Log.e(APP_TAG, "Failed to clear existing Heart Rate data", e));
     }
 
