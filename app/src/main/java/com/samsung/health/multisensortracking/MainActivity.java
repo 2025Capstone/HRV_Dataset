@@ -50,6 +50,7 @@ public class MainActivity extends Activity {
     Thread uiUpdateThread = null;
     private ConnectionManager connectionManager; // HealthTrackingService와 연결을 관리하는 객체
     private PpgListener ppgListener = null; // 심박수 데이터를 처리할 리스너
+    private AccelerometerListener accelerometerListener = null; // 가속도계 데이터를 처리할 리스너
     private boolean connected = false; // 서비스 연결 여부
     private boolean permissionGranted = false; // 권한 부여 여부
 
@@ -118,8 +119,12 @@ public class MainActivity extends Activity {
             }
 
             connected = true; // 연결 성공
+
             ppgListener = new PpgListener();// 리스너 초기화
             connectionManager.initPpg(ppgListener); // ConnectionManager를 통해 PPG 트래커 초기화
+
+            accelerometerListener = new AccelerometerListener(); // 가속도계 리스너 초기화
+            connectionManager.initAccelerometer(accelerometerListener); // ConnectionManager를 통해 가속도계 트래커 초기화
         }
 
         @Override
