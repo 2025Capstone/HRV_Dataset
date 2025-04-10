@@ -105,6 +105,25 @@ public class ConnectionManager {
         }
     }
 
+    public void initAccelerometer(AccelerometerListener accelListener) {
+        try {
+            // HealthTrackingService로부터 Accelerometer 센서를 가져옵니다.
+            // SDK에서 제공하는 HealthTrackerType.ACCELEROMETER 또는 유사한 타입을 사용하세요.
+            final HealthTracker accelTracker = healthTrackingService.getHealthTracker(HealthTrackerType.ACCELEROMETER);
+            if (accelTracker != null) {
+                accelListener.setHealthTracker(accelTracker);
+                setHandlerForBaseListener(accelListener);
+                accelListener.setup();  // 이벤트 리스너 설정
+                Log.i(TAG, "Accelerometer Tracker initialized successfully.");
+            } else {
+                Log.e(TAG, "Failed to initialize Accelerometer Tracker.");
+            }
+        } catch (IllegalArgumentException e) {
+            Log.e(TAG, "Invalid HealthTrackerType for Accelerometer: " + e.getMessage());
+        }
+    }
+
+
     // BaseListener에 메인 스레드 핸들러 설정
     private void setHandlerForBaseListener(BaseListener baseListener) {
         baseListener.setHandler(new Handler(Looper.getMainLooper())); // 메인 스레드 핸들러 지정
