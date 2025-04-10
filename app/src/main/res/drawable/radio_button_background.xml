@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 체크된 상태 (state_checked=true) -->
+    <item android:state_checked="true">
+        <shape android:shape="rectangle">
+            <!-- 모든 모서리를 둥글게 -->
+            <corners android:radius="20dp" />
+            <!-- 내부 색상 검은색 -->
+            <solid android:color="#000000" />
+            <!-- 회색 테두리, 두께 2dp -->
+            <stroke android:width="2dp" android:color="#808080" />
+        </shape>
+    </item>
+    <!-- 체크되지 않은 상태 (기본) -->
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="20dp" />
+            <solid android:color="#000000" />
+            <stroke android:width="2dp" android:color="#808080" />
+        </shape>
+    </item>
+</selector>

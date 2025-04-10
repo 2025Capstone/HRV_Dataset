@@ -6,4 +6,5 @@
         <item name="android:windowBackground">@android:color/black</item>
         <item name="android:windowDisablePreview">true</item>
     </style>
+
 </resources>

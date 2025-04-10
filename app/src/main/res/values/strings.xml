@@ -9,7 +9,7 @@
     <string name="StopLabel">Stop</string>
     <string name="StartLabel">Measure</string>
     <string name="SpO2">SpO2</string>
-    <string name="HeartRate">Press the measure button.(35second)</string>
+    <string name="HeartRate">Press the measure button.(1hour)</string>
     <string name="HeartRateStatus">HR Status</string>
     <string name="Ibi">IBI</string>
     <string name="IbiStatus">IBI Status</string>

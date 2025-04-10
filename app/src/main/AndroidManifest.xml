@@ -13,9 +13,6 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.MainTheme">
-        <activity
-            android:name="com.samsung.health.multisensortracking.DetailsActivity"
-            android:exported="false" />
 
         <uses-library
             android:name="com.google.android.wearable"

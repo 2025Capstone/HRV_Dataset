@@ -2,6 +2,7 @@ package com.samsung.health.multisensortracking;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -9,13 +10,19 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.GestureDetector;
+import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 
 import com.google.android.material.progressindicator.CircularProgressIndicator;
@@ -25,9 +32,15 @@ import com.samsung.android.service.health.tracking.HealthTrackerException;
 import com.samsung.health.multisensortracking.databinding.ActivityMainBinding;
 
 import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MainActivity extends Activity {
+    private GestureDetector gestureDetector;
 
     private final static String APP_TAG = "MainActivity";
     private final static int MEASUREMENT_DURATION = 3603000; // 측정 길이(1시간)
@@ -137,6 +150,12 @@ public class MainActivity extends Activity {
         butStart = binding.butStart;
         measurementProgress = binding.progressBar;
 
+        View rootLayout = findViewById(R.id.root_layout);
+        rootLayout.setOnTouchListener((v, event) -> {
+            Log.d("Gesture", "rootLayout onTouch: " + event.toString());
+            return gestureDetector.onTouchEvent(event);
+        });
+
         // 프로그레스바 크기 조정
         adjustProgressBar(measurementProgress);
         measurementProgress.setMax((int) (MEASUREMENT_DURATION / MEASUREMENT_TICK));
@@ -154,6 +173,39 @@ public class MainActivity extends Activity {
                 .addOnSuccessListener(aVoid -> Log.d(APP_TAG, "Test data uploaded"))
                 .addOnFailureListener(e -> Log.e(APP_TAG, "Test data upload failed", e));
 
+        // 스와이프 제스처 객체 생성
+        gestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
+            private static final int SWIPE_THRESHOLD = 100;
+            private static final int SWIPE_VELOCITY_THRESHOLD = 100;
+
+            @Override
+            public boolean onFling(@Nullable MotionEvent e1, @NonNull MotionEvent e2, float velocityX, float velocityY) {
+                float diffX = e2.getX() - e1.getX();
+                float diffY = e2.getY() - e1.getY();
+
+                if (Math.abs(diffX) > Math.abs(diffY)) {
+                    if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
+                        if (diffX < 0) {
+                            Log.d("Gesture", "오른쪽-왼쪽 스와이프 감지 - 다이얼로그 호출");
+                            showDrowsinessDialog(null);
+                            return true;
+                        } else {
+                            Log.d("Gesture", "왼쪽-오른쪽 스와이프 감지");
+                        }
+                    }
+                }
+                return false;
+            }
+        });
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        Log.d("Gesture", "onTouchEvent: " + event.toString());
+        if (gestureDetector.onTouchEvent(event)) {
+            return true;
+        }
+        return super.onTouchEvent(event);
     }
 
     @Override
@@ -165,6 +217,53 @@ public class MainActivity extends Activity {
         if (connectionManager != null) {
             connectionManager.disconnect();
         }
+    }
+
+    // 졸음 여부 설문조사 다이얼로그 창 표시 메서드
+    public void showDrowsinessDialog(View view) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.Theme_MainTheme);
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.dialog_custom, null);
+        builder.setView(dialogView);
+        builder.setCancelable(true);
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
+        RadioGroup rgDrowsiness = dialogView.findViewById(R.id.rgDrowsiness);
+        Button btnSubmit = dialogView.findViewById(R.id.btnSubmitDrowsiness);
+        Button btnCancle = dialogView.findViewById(R.id.btnCancleDrowsiness);
+
+        btnCancle.setOnClickListener(v -> dialog.dismiss());
+
+        btnSubmit.setOnClickListener(v -> {
+            int selectedId = rgDrowsiness.getCheckedRadioButtonId();
+            if (selectedId == -1) {
+                Toast.makeText(this, "졸음 단계를 선택해주세요.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            RadioButton selectedRadio = dialogView.findViewById(selectedId);
+            int drowsinessLevel = Integer.parseInt(selectedRadio.getText().toString());
+            long timeStamp = System.currentTimeMillis();
+            String formattedTimestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault()).format(new Date(timeStamp));
+
+
+            DatabaseReference drowsinessRef = FirebaseDatabase.getInstance().getReference("DrowsinessData");
+            Map<String, Object> data = new HashMap<>();
+            data.put("timestamp", formattedTimestamp);
+            data.put("drowsinessLevel", drowsinessLevel);
+
+            drowsinessRef.push().setValue(data)
+                    .addOnSuccessListener(aVoid -> {
+                        Toast.makeText(this, "졸음 설문 결과가 기록되었습니다.", Toast.LENGTH_SHORT).show();
+                        dialog.dismiss();
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(this, "설문 결과 업로드 실패", Toast.LENGTH_SHORT).show();
+                        Log.e("DrowsinessLevel Survey Upload", "Upload Failure", e);
+                    });
+        });
     }
 
     // ConnectionManager 객체를 생성하고 HealthTrackingService와 연결 시도
