@@ -39,7 +39,6 @@ public class PpgListener extends BaseListener {
     private DatabaseReference databaseReference_survey;
     private boolean shouldUploadData = false; // 데이터 업로드 활성화 여부 플래그
     private List<PpgData> ppgDataList = new ArrayList<>(); // PPG 센서 데이터(정수값)를 저장할 리스트
-    private long lastPeakTime = 0;  // 마지막 피크 감지 시각 (밀리초 단위)
 
     // PPG 업데이트 리스너: 외부(UI 등)로 PPG 업데이트 값을 전달하기 위한 인터페이스
     private PpgUpdateListener updateListener;
@@ -149,7 +148,8 @@ public class PpgListener extends BaseListener {
 
     // 계산된 RR 간격과 타임스탬프를 Firebase에 업로드하는 메서드
     private void uploadPpgDataToFirebase(long ppgData, long timestamp) {
-        String formattedTimestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault()).format(new Date(timestamp));
+        String formattedTimestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS",
+                Locale.getDefault()).format(new Date(timestamp));
 
         Map<String, Object> singleData = new HashMap<>();
         singleData.put("ppgGreen", ppgData);
