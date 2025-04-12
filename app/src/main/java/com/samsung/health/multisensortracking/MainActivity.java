@@ -41,6 +41,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MainActivity extends Activity {
     private GestureDetector gestureDetector;
+    // PERMISSION_REQUEST_CODE 상수를 추가 (원하는 값, 여기서는 0 사용)
+    private final static int PERMISSION_REQUEST_CODE = 0;
 
     private final static String APP_TAG = "MainActivity";
     private final static int MEASUREMENT_DURATION = 3603000; // 측정 길이(1시간)
@@ -92,6 +94,7 @@ public class MainActivity extends Activity {
 
             // 측정 종료 처리
             ppgListener.stopTracker();
+            accelerometerListener.stopTracker();
 
             isMeasurementRunning.set(false);
             runOnUiThread(() -> {
@@ -165,11 +168,15 @@ public class MainActivity extends Activity {
         adjustProgressBar(measurementProgress);
         measurementProgress.setMax((int) (MEASUREMENT_DURATION / MEASUREMENT_TICK));
 
-        // BODY_SENSORS 권한 확인 (권한이 없으면 요청)
-        if (ActivityCompat.checkSelfPermission(getApplicationContext(), getString(R.string.BodySensors))
-                == PackageManager.PERMISSION_DENIED)
-            requestPermissions(new String[]{Manifest.permission.BODY_SENSORS}, 0);
-        else {
+        // BODY_SENSORS 와 ACTIVITY_RECOGNITION 권한 체크
+        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BODY_SENSORS) == PackageManager.PERMISSION_DENIED ||
+                ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_DENIED) {
+
+            requestPermissions(
+                    new String[]{Manifest.permission.BODY_SENSORS, Manifest.permission.ACTIVITY_RECOGNITION},
+                    PERMISSION_REQUEST_CODE
+            );
+        } else {
             permissionGranted = true;
             createConnectionManager();
         }
@@ -219,6 +226,8 @@ public class MainActivity extends Activity {
         // 액티비티 종료 시, 트래커 중지 및 서비스 연결 해제
         if (ppgListener != null)
             ppgListener.stopTracker();
+        if (accelerometerListener != null)
+            accelerometerListener.stopTracker();
         if (connectionManager != null) {
             connectionManager.disconnect();
         }
@@ -317,6 +326,10 @@ public class MainActivity extends Activity {
             ppgListener.startTracker(); // 측정 시작
             ppgListener.startDataUpload(); // 데이터 업로드 활성화
 
+            accelerometerListener.startTracker();
+            accelerometerListener.startDataUpload();
+
+
             // 측정 시작 시 Firebase 데이터 초기화 (이전 데이터 삭제)
             databaseReference.removeValue()
                     .addOnSuccessListener(aVoid -> Log.d(APP_TAG, "Firebase data cleared successfully"))
@@ -334,6 +347,9 @@ public class MainActivity extends Activity {
             ppgListener.stopTracker(); // 측정 종료
             ppgListener.stopDataUpload(); // 데이터 업로드 비활성화
 
+            accelerometerListener.stopTracker();
+            accelerometerListener.stopDataUpload();
+
             // 약간의 딜레이 후 UI 초기화 (버튼 텍스트, progress 초기화 등)
             final Handler progressHandler = new Handler(Looper.getMainLooper());
             progressHandler.postDelayed(() -> {
@@ -346,23 +362,25 @@ public class MainActivity extends Activity {
         }
     }
 
-    // 권한 요청 결과 처리
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == 0) {
+        if (requestCode == PERMISSION_REQUEST_CODE) {
             permissionGranted = true;
             for (int i = 0; i < permissions.length; ++i) {
                 if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
-                    // 사용자가 권한을 거부한 경우 (영구 거부인지 한 번 거부한 것인지 구분)
+                    // 사용자가 권한 거부한 경우
                     if (!shouldShowRequestPermissionRationale(permissions[i]))
                         Toast.makeText(getApplicationContext(), getString(R.string.PermissionDeniedPermanently), Toast.LENGTH_LONG).show();
                     else
                         Toast.makeText(getApplicationContext(), getString(R.string.PermissionDeniedRationale), Toast.LENGTH_LONG).show();
                     finish();
+                    permissionGranted = false;
                     return;
                 }
             }
             createConnectionManager();
+        } else {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
 

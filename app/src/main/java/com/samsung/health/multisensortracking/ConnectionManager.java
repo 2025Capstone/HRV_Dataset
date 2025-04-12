@@ -47,6 +47,12 @@ public class ConnectionManager {
                 // 지원되지 않을 경우 옵저버에 실패 메시지 전달
                 connectionObserver.onConnectionResult(R.string.NoHrSupport); // 지원 불가 알림
             }
+            // PPG_CONTINUOUS 트래커(심박수 측정)가 지원되는지 확인
+            if (!isAccelAvailable(healthTrackingService)) {
+                Log.i(TAG, "Device does not support Accelerometer tracking");
+                // 지원되지 않을 경우 옵저버에 실패 메시지 전달
+                connectionObserver.onConnectionResult(R.string.NoAccelerometerSupport); // 지원 불가 알림
+            }
         }
 
         @Override
@@ -113,7 +119,6 @@ public class ConnectionManager {
             if (accelTracker != null) {
                 accelListener.setHealthTracker(accelTracker);
                 setHandlerForBaseListener(accelListener);
-                accelListener.setup();  // 이벤트 리스너 설정
                 Log.i(TAG, "Accelerometer Tracker initialized successfully.");
             } else {
                 Log.e(TAG, "Failed to initialize Accelerometer Tracker.");
@@ -136,5 +141,14 @@ public class ConnectionManager {
 
         // HealthTrackingService가 지원하는 트래커 타입 중 PPG_CONTINUOUS가 있는지 확인하는 메서드
         return availableTrackers.contains(HealthTrackerType.PPG_GREEN);
+    }
+
+    // PPG_CONTINUOUS 트래커 지원 여부 확인
+    private boolean isAccelAvailable(@NonNull HealthTrackingService healthTrackingService) {
+        // 지원하는 트래커 타입 목록 가져오기
+        final List<HealthTrackerType> availableTrackers = healthTrackingService.getTrackingCapability().getSupportHealthTrackerTypes();
+
+        // HealthTrackingService가 지원하는 트래커 타입 중 PPG_CONTINUOUS가 있는지 확인하는 메서드
+        return availableTrackers.contains(HealthTrackerType.ACCELEROMETER);
     }
 }
