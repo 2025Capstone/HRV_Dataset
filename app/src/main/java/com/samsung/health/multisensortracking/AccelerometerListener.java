@@ -132,8 +132,10 @@ public class AccelerometerListener extends BaseListener {
         singleData.put("timestamp", formattedTimestamp);
 
         databaseReference.push().setValue(singleData)
-                .addOnSuccessListener(aVoid ->
-                        Log.d(APP_TAG, "Accelerometer data uploaded successfully"))
+                .addOnSuccessListener(aVoid -> {
+                        Log.d(APP_TAG, "Accelerometer data uploaded successfully");
+                        pruneOldData(databaseReference, "timestamp");
+                })
                 .addOnFailureListener(e ->
                         Log.e(APP_TAG, "Failed to upload accelerometer data", e));
     }

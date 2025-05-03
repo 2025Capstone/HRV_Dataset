@@ -62,6 +62,8 @@ public class MainActivity extends Activity {
     private Button butStart; // 시작/중지 버튼
     private CircularProgressIndicator measurementProgress = null; // 측정 진행 표시기
     private DatabaseReference databaseReference; // Firebase 데이터베이스 참조 객체
+    private DatabaseReference databaseReference_drowsinessLevel;
+    private DatabaseReference databaseReference_accelerometer;
 
 
     // 측정 타이머
@@ -147,6 +149,8 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         // Firebase 데이터베이스 참조 초기화 ("HeartRateData" 노드)
         databaseReference = FirebaseDatabase.getInstance().getReference("HeartRateData");
+        databaseReference_drowsinessLevel = FirebaseDatabase.getInstance().getReference("DrowsinessData");
+        databaseReference_accelerometer = FirebaseDatabase.getInstance().getReference("AccelerometerData");
 
         // View 바인딩: ActivityMainBinding 사용하여 레이아웃 inflate
         final ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
@@ -332,6 +336,14 @@ public class MainActivity extends Activity {
 
             // 측정 시작 시 Firebase 데이터 초기화 (이전 데이터 삭제)
             databaseReference.removeValue()
+                    .addOnSuccessListener(aVoid -> Log.d(APP_TAG, "Firebase data cleared successfully"))
+                    .addOnFailureListener(e -> Log.e(APP_TAG, "Failed to clear Firebase data", e));
+            // 측정 시작 시 Firebase 데이터 초기화 (이전 데이터 삭제)
+            databaseReference_drowsinessLevel.removeValue()
+                    .addOnSuccessListener(aVoid -> Log.d(APP_TAG, "Firebase data cleared successfully"))
+                    .addOnFailureListener(e -> Log.e(APP_TAG, "Failed to clear Firebase data", e));
+            // 측정 시작 시 Firebase 데이터 초기화 (이전 데이터 삭제)
+            databaseReference_accelerometer.removeValue()
                     .addOnSuccessListener(aVoid -> Log.d(APP_TAG, "Firebase data cleared successfully"))
                     .addOnFailureListener(e -> Log.e(APP_TAG, "Failed to clear Firebase data", e));
 
