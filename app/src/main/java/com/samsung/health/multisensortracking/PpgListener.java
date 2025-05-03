@@ -161,37 +161,11 @@ public class PpgListener extends BaseListener {
                 .addOnSuccessListener(aVoid -> {
                     Log.d(APP_TAG, "Single PPG Green data uploaded successfully");
 
-//                    removeOldData();  // 업로드 성공 후, 오래된 데이터를 삭제하는 메서드 호출
+                    pruneOldData(databaseReference, "timestamp");
                 })
                 .addOnFailureListener(e -> {
                     Log.e(APP_TAG, "Failed to upload Single RR Interval data", e);
                     // 실패 시 재시도 로직 추가 가능
-                });
-    }
-
-    // 오래된 데이터를 삭제하는 메서드 (여기서는 10분 이전의 데이터 삭제)
-    private void removeOldData() {
-        // 10분 전의 타임스탬프 계산
-        long tenMinutesAgo = System.currentTimeMillis() - 10 * 60 * 1000;
-        String cutoffTimestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault()).format(new Date(tenMinutesAgo));
-
-        // Firebase Database에서 "timestamp" 필드를 기준으로 10분 전까지의 데이터를 조회 후 삭제
-        databaseReference.orderByChild("timestamp")
-                .endAt(cutoffTimestamp) // 10분 전까지의 데이터 조회
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        for (DataSnapshot child : snapshot.getChildren()) {
-                            child.getRef().removeValue() // 오래된 데이터 삭제
-                                    .addOnSuccessListener(aVoid -> Log.d(APP_TAG, "Old data removed: " + child.getKey()))
-                                    .addOnFailureListener(e -> Log.e(APP_TAG, "Failed to remove old data", e));
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-                        Log.e(APP_TAG, "Failed to query old data for removal", error.toException());
-                    }
                 });
     }
 
