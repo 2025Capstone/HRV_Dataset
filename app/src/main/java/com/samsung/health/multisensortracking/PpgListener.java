@@ -35,6 +35,7 @@ public class PpgListener extends BaseListener {
     }
 
     private static final String APP_TAG = "PPG_Listener";
+    private static final String USER_ID = "123456";  // 사용자별 고정 UID
     private DatabaseReference databaseReference; // Firebase Database의 참조 (심박수 데이터를 저장할 경로)
     private DatabaseReference databaseReference_survey;
     private boolean shouldUploadData = false; // 데이터 업로드 활성화 여부 플래그
@@ -75,7 +76,9 @@ public class PpgListener extends BaseListener {
     // 생성자: 객체 생성 시 초기화 작업 수행
     PpgListener() {
         // Firebase Database의 "HeartRateData" 경로를 참조
-        databaseReference = FirebaseDatabase.getInstance().getReference("HeartRateData");
+        databaseReference = FirebaseDatabase.getInstance()
+                .getReference(USER_ID)
+                .child("PPG_Data");
         databaseReference_survey = FirebaseDatabase.getInstance().getReference("DrowsinessData");
 
         // 초기에 Firebase 기존에 저장된 데이터를 모두 삭제(초기화)
@@ -181,34 +184,5 @@ public class PpgListener extends BaseListener {
         shouldUploadData = false;
         flushHandler.removeCallbacks(flushRunnable);
     }
-
-    public void savePpgDataToCsv(@NonNull Context context) {
-        // CSV 헤더
-        StringBuilder csvBuilder = new StringBuilder();
-        csvBuilder.append("timestamp,ppgValue\n");
-
-        // SimpleDateFormat을 사용하여 timestamp 포맷 지정 (예: 2025-03-16 23:33:22)
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
-
-        for (PpgListener.PpgData data : ppgDataList) {
-            String formattedTimestamp = dateFormat.format(new Date(data.timestamp));
-            csvBuilder.append(formattedTimestamp)
-                    .append(",")
-                    .append(data.ppgValue)
-                    .append("\n");
-        }
-
-        try {
-            // 내부 저장소에 "ppg_data.csv" 파일로 저장 (Context.MODE_PRIVATE 사용)
-            FileOutputStream fos = context.openFileOutput("ppg_data.csv", Context.MODE_PRIVATE);
-            fos.write(csvBuilder.toString().getBytes());
-            fos.close();
-            Log.d(APP_TAG, "CSV file saved successfully.");
-        } catch (Exception e) {
-            Log.e(APP_TAG, "Failed to save CSV file", e);
-        }
-    }
-
-
 }
 
