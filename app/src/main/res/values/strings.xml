@@ -35,6 +35,7 @@
 
     <string name="NoSpo2Support">SpO2 no supported on this device.</string>
     <string name="NoHrSupport">Heart Rate no supported on this device.</string>
+    <string name="NoAccelerometerSupport">Accelerometer no supported on this device.</string>
     <string name="BodySensors">android.permission.BODY_SENSORS</string>
 
     <string name="ExtraHr">Hr</string>

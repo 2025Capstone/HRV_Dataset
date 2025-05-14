@@ -219,6 +219,18 @@ public class MainActivity extends Activity {
                     // PPG 측정/업로드 중지
                     ppgListener.stopTracker();
                     ppgListener.stopDataUpload();
+
+                    isMeasurementRunning.set(false);
+                    getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+                    // 약간의 딜레이 후 UI 초기화 (버튼 텍스트, progress 초기화 등)
+                    final Handler progressHandler = new Handler(Looper.getMainLooper());
+                    progressHandler.postDelayed(() -> {
+                        butStart.setText(R.string.StartLabel);
+                        measurementProgress.setProgress(0);
+                        butStart.setEnabled(true);
+                    }, MEASUREMENT_TICK * 2);
+
                     // paired 리셋
                     FirebaseDatabase.getInstance()
                             .getReference(USER_ID)
@@ -361,6 +373,18 @@ public class MainActivity extends Activity {
                         // PPG 측정 시작
                         ppgListener.startTracker();
                         ppgListener.startDataUpload();
+                        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+                        // 심박수 업데이트 리스너 설정: 심박수 변화가 발생하면 txtHeartRate 업데이트
+                        ppgListener.setPpgUpdateListener(ppg -> runOnUiThread(() -> {
+                            String ppgText = ppg + " ms";
+                            txtHeartRate.setText(ppgText);
+                        }));
+
+                        // CountDownTimer를 별도 스레드에서 실행하여 UI 업데이트 시작
+                        uiUpdateThread = new Thread(countDownTimer::start);
+                        uiUpdateThread.start();
+
                         // paired 플래그 쓰기
                         pairingNode.child("paired").setValue(true);
                     } else {
@@ -458,8 +482,6 @@ public class MainActivity extends Activity {
                 butStart.setText(R.string.StartLabel);
                 measurementProgress.setProgress(0);
                 butStart.setEnabled(true);
-                // CSV 파일로 저장
-//                ppgListener.savePpgDataToCsv(this);
             }, MEASUREMENT_TICK * 2);
         }
     }
