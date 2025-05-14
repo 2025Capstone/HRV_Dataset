@@ -54,8 +54,8 @@ public class PpgListener extends BaseListener {
         void onPpgUpdate(int ppgValue);  // PPG 값을 전달하는 메서드
     }
 
-    // flush 호출 주기 (예: 0.5초)
-    private static final long FLUSH_INTERVAL_MS = 500;
+    // flush 호출 주기 (예: 1초)
+    private static final long FLUSH_INTERVAL_MS = 1000;
     // flush를 호출할 Handler (메인 스레드 사용)
     private final android.os.Handler flushHandler = new android.os.Handler(android.os.Looper.getMainLooper());
     // flush를 주기적으로 호출하는 Runnable
