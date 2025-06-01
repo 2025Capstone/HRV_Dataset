@@ -205,9 +205,6 @@ public class MainActivity extends Activity {
             createConnectionManager();
         }
 
-        databaseReference.setValue("Test Data")
-                .addOnSuccessListener(aVoid -> Log.d(APP_TAG, "Test data uploaded"))
-                .addOnFailureListener(e -> Log.e(APP_TAG, "Test data upload failed", e));
 
         stopRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -237,6 +234,9 @@ public class MainActivity extends Activity {
                             .child("pairing")
                             .child("paired")
                             .setValue(false);
+//                    if (connectionManager != null) {
+//                        connectionManager.disconnect();
+//                    }
                 } else {
                     Log.d("STOP_REF", ">>> stop=false 이므로 PPG 계속 동작");
                 }
@@ -287,8 +287,7 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
         // 액티비티 종료 시, 트래커 중지 및 서비스 연결 해제
-        if (ppgListener != null)
-            ppgListener.stopTracker();
+
 //        if (accelerometerListener != null)
 //            accelerometerListener.stopTracker();
         if (connectionManager != null) {

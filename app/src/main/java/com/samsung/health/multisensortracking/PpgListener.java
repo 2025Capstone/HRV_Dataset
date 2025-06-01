@@ -82,7 +82,7 @@ public class PpgListener extends BaseListener {
         databaseReference_survey = FirebaseDatabase.getInstance().getReference("DrowsinessData");
 
         // 초기에 Firebase 기존에 저장된 데이터를 모두 삭제(초기화)
-        clearExistingData();
+//        clearExistingData();
 
         // HealthTracker 이벤트 리스너 생성 (TrackerEventListener 구현)
         final HealthTracker.TrackerEventListener trackerEventListener = new HealthTracker.TrackerEventListener() {
@@ -164,7 +164,7 @@ public class PpgListener extends BaseListener {
                 .addOnSuccessListener(aVoid -> {
                     Log.d(APP_TAG, "Single PPG Green data uploaded successfully");
 
-                    pruneOldData(databaseReference, "timestamp");
+//                    pruneOldData(databaseReference, "timestamp");
                 })
                 .addOnFailureListener(e -> {
                     Log.e(APP_TAG, "Failed to upload Single RR Interval data", e);
